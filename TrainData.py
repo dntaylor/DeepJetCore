@@ -662,11 +662,13 @@ class TrainData(object):
         weighter = Weighter() 
         weighter.undefTruth = self.undefTruth
         
+        #classes = self.reducedtruthclasses if self.reducedtruthclasses else self.truthclasses
         if self.remove or self.weight:
             weighter.setBinningAndClasses(
                 [self.weight_binX,self.weight_binY],
                 self.weightbranchX,self.weightbranchY,
                 self.truthclasses
+                #classes
                 )
         return weighter
 
@@ -681,6 +683,10 @@ class TrainData(object):
             for fname in filenames:
                 fileTimeOut(fname, 120)
                 nparray = self.readTreeFromRootToTuple(fname, branches=branches)
+                #if self.reducedtruthclasses:
+                #    reduced = self.reduceTruth(nparray)
+                #    for t,truth in enumerate(self.reducedtruthclasses):
+                #        nparray[truth] = reduced[t]
                 weighter.addDistributions(nparray)
                 #del nparray
                 showprog.show(counter)

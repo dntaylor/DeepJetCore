@@ -44,6 +44,7 @@ dashedcolormap=['red','red,dashed'
 from pdb import set_trace
 from DeepJetCore.compiled import c_storeTensor
 
+import json
 
 class testDescriptor(object):
     
@@ -410,13 +411,51 @@ def make_association(txtfiles, input_branches=None, output_branches=None, limit=
     return truth, models
     
     
+def plotAccuracy(infilename,outfilename,range):
+
+    import matplotlib
+
+    matplotlib.use('Agg')
+
+    with open(infilename) as f:
+        data = json.load(f)
+
+    train=[]
+    val=[]
+    epochs=[]
+    i=0
+    automax=0
+    automin=1
+    for d in data:
+        t=d['acc']
+        v=d['val_acc']
+        train.append(t)
+        val.append(v)
+        epochs.append(i)
+        i=i+1
+        automax=max(automax,v,t)
+        automin=min(automin,v,t)
+
+
+    import matplotlib.pyplot as plt
+    f = plt.figure()
+    plt.plot(epochs,train,'r',label='train')
+    plt.plot(epochs,val,'b',label='val')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(loc=4)
+    if len(range)==2:
+        plt.ylim(range)
+    elif automax>0:
+        plt.ylim([automin*0.98,automax*1.02])
+    f.savefig(outfilename)
 
 def plotLoss(infilename,outfilename,range):
-    
+
     import matplotlib
-    
-    matplotlib.use('Agg') 
-    
+
+    matplotlib.use('Agg')
+
     infile=open(infilename,'r')
     trainloss=[]
     valloss=[]
@@ -432,11 +471,10 @@ def plotLoss(infilename,outfilename,range):
         valloss.append(vl)
         epochs.append(i)
         i=i+1
-        if i==5:
-            automax=max(tl,vl)
+        automax=max(automax,tl,vl)
         automin=min(automin,vl,tl)
-        
-    
+
+
     import matplotlib.pyplot as plt
     f = plt.figure()
     plt.plot(epochs,trainloss,'r',label='train')
@@ -447,9 +485,8 @@ def plotLoss(infilename,outfilename,range):
     if len(range)==2:
         plt.ylim(range)
     elif automax>0:
-        plt.ylim([automin*0.9,automax])
+        plt.ylim([automin*0.98,automax*1.02])
     f.savefig(outfilename)
-    plt.close()
     
 ######### old part - keep for reference, might be useful some day 
 

@@ -329,7 +329,8 @@ class DataCollection(object):
         lines = [line.rstrip('\n') for line in open(file)]
         for line in lines:
             if len(line) < 1: continue
-            if self.useRelativePaths:
+            #if self.useRelativePaths:
+            if not line.startswith('/'):
                 self.originRoots.append(fdir+'/'+line)
             else:
                 self.originRoots.append(line)

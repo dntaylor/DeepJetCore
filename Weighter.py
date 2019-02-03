@@ -23,6 +23,7 @@ class Weighter(object):
         self.removeProbabilties=[]
         self.binweights=[]
         self.distributions=[]
+        self.totalcounts=[]
         self.xedges=[]
         self.yedges=[]
         self.classes=[]
@@ -45,6 +46,7 @@ class Weighter(object):
            self.undefTruth == other.undefTruth and \
            comparator(self.binweights, other.binweights) and \
            comparator(self.distributions, other.distributions) and \
+           self.totalcounts == other.totalcounts and \
            (self.xedges == other.xedges).all() and \
            (self.yedges == other.yedges).all()
     
@@ -84,8 +86,11 @@ class Weighter(object):
             self.yedges=ye
             if len(self.distributions)==len(self.classes):
                 self.distributions[i]=self.distributions[i]+tmphist
+                self.totalcounts[i] += numpy.sum(Tuple[self.classes[i]])
             else:
                 self.distributions.append(tmphist)
+                self.totalcounts.append(numpy.sum(Tuple[self.classes[i]]))
+
             
     def printHistos(self,outdir):
         import numpy
@@ -121,8 +126,8 @@ class Weighter(object):
             try:
                 referenceidx=self.classes.index(referenceclass)
             except:
-                print('createRemoveProbabilities: reference index not found in class list')
-                raise Exception('createRemoveProbabilities: reference index not found in class list')
+                print('createRemoveProbabilities: reference index not found in class list {}'.format(referenceclass))
+                raise Exception('createRemoveProbabilities: reference index not found in class list {}'.format(referenceclass))
             
         if len(self.classes) > 0 and len(self.classes[0]):
             self.Axixandlabel = [self.nameX, self.nameY]+ self.classes
@@ -187,7 +192,7 @@ class Weighter(object):
             raise Exception('removeProbabilties bins not initialised. Cannot create indices per jet')
         
         tuplelength=len(Tuple)
-        
+
         notremove=numpy.zeros(tuplelength)
         counter=0
         xaverage=[]
@@ -207,8 +212,10 @@ class Weighter(object):
             binX =  self.getBin(jet[self.nameX], self.axisX)
             binY =  self.getBin(jet[self.nameY], self.axisY)
             
+            found = False
             for index, classs in enumerate(self.classes):
                 if  useonlyoneclass or 1 == jet[classs]:
+                    found = True
                     rand=numpy.random.ranf()
                     prob = self.removeProbabilties[index][binX][binY]
                     
@@ -223,6 +230,11 @@ class Weighter(object):
                         norm[index]+=1
             
                     counter=counter+1            
+                    break
+            if not found:
+                notremove[counter] = 0
+                counter += 1
+
         
             
         if not len(notremove) == counter:

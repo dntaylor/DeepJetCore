@@ -259,6 +259,7 @@ class training_base(object):
                    maxqsize=5, 
                    checkperiod=10,
                    additional_plots=None,
+                   minTokenLifetime=5,
                    **trainargs):
         
         
@@ -315,6 +316,7 @@ class training_base(object):
                                     outputDir=self.outputDir,
                                     checkperiod=checkperiod,
                                     checkperiodoffset=self.trainedepoches,
+                                    minTokenLifetime=minTokenLifetime,
                                     additional_plots=additional_plots)
         
         

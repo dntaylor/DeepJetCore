@@ -6,7 +6,7 @@ Created on 7 Apr 2017
 from __future__ import print_function
 
 from .ReduceLROnPlateau import ReduceLROnPlateau
-from ..evaluation import plotLoss
+from ..evaluation import plotLoss, plotAccuracy
 
 from keras.callbacks import Callback, EarlyStopping,History,ModelCheckpoint #, ReduceLROnPlateau # , TensorBoard
 # loss per epoch
@@ -89,6 +89,7 @@ class newline_callbacks_begin(Callback):
             
         if self.plotLoss:
             plotLoss(self.outputDir+'/losses.log',self.outputDir+'/losses.pdf',[])
+            plotAccuracy(lossfile,self.outputDir+'/accuracy.pdf',[])
         
 class newline_callbacks_end(Callback):
     def on_epoch_end(self,epoch, epoch_logs={}):
