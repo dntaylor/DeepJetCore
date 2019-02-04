@@ -213,17 +213,17 @@ class Weighter(object):
             binY =  self.getBin(jet[self.nameY], self.axisY)
             
             found = False
-            for index, classs in enumerate(self.classes):
-                if  useonlyoneclass or 1 == jet[classs]:
+            for index, aclass in enumerate(self.classes):
+                if  useonlyoneclass or 1 == jet[aclass]:
                     found = True
                     rand=numpy.random.ranf()
                     prob = self.removeProbabilities[index][binX][binY]
                     
                     if rand < prob and index != self.refclassidx:
-                        #print('rm  ',index,self.refclassidx,jet[classs],classs)
+                        #print('rm  ',index,self.refclassidx,jet[aclass],aclass)
                         notremove[counter]=0
                     else:
-                        #print('keep',index,self.refclassidx,jet[classs],classs)
+                        #print('keep',index,self.refclassidx,jet[aclass],aclass)
                         notremove[counter]=1
                         xaverage[index]+=jet[self.nameX]
                         yaverage[index]+=jet[self.nameY]
@@ -261,8 +261,8 @@ class Weighter(object):
             binX =  self.getBin(jet[self.nameX], self.axisX)
             binY =  self.getBin(jet[self.nameY], self.axisY)
             
-            for index, classs in enumerate(self.classes):
-                if 1 == jet[classs] or useonlyoneclass:
+            for index, aclass in enumerate(self.classes):
+                if 1 == jet[aclass] or useonlyoneclass:
                     weight[jetcount]=(self.binweights[index][binX][binY])
                     
             jetcount=jetcount+1        
