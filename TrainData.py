@@ -687,7 +687,7 @@ class TrainData(object):
                 #    reduced = self.reduceTruth(nparray)
                 #    for t,truth in enumerate(self.reducedtruthclasses):
                 #        nparray[truth] = reduced[t]
-                weighter.addDistributions(nparray)
+                weighter.addDistributions(nparray,self.referenceclass)
                 #del nparray
                 showprog.show(counter)
                 counter=counter+1

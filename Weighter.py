@@ -29,6 +29,7 @@ class Weighter(object):
         self.classes=[]
         self.refclassidx=0
         self.undefTruth=[]
+        self.ignore_when_weighting=[]
     
     def __eq__(self, other):
         'A == B'
@@ -63,7 +64,7 @@ class Weighter(object):
         if len(self.classes)<1:
             self.classes=['']
         
-    def addDistributions(self,Tuple):
+    def addDistributions(self,Tuple,referenceclass='flatten'):
         import numpy
         selidxs=[]
         
@@ -81,7 +82,10 @@ class Weighter(object):
             
         
         for i in range(len(self.classes)):
-            tmphist,xe,ye=numpy.histogram2d(xtuple[selidxs[i]],ytuple[selidxs[i]],[self.axisX,self.axisY],normed=True)
+            if referenceclass not in ['lowest']:
+                tmphist,xe,ye=numpy.histogram2d(xtuple[selidxs[i]],ytuple[selidxs[i]],[self.axisX,self.axisY],normed=True)
+            else:
+                tmphist,xe,ye=numpy.histogram2d(xtuple[selidxs[i]],ytuple[selidxs[i]],[self.axisX,self.axisY])
             self.xedges=xe
             self.yedges=ye
             if len(self.distributions)==len(self.classes):
@@ -122,7 +126,7 @@ class Weighter(object):
     def createRemoveProbabilitiesAndWeights(self,referenceclass='isB'):
         import numpy
         referenceidx=-1
-        if not referenceclass=='flatten':
+        if referenceclass not in ['flatten','lowest']:
             try:
                 referenceidx=self.classes.index(referenceclass)
             except:
@@ -156,16 +160,25 @@ class Weighter(object):
                 
         probhists=[]
         weighthists=[]
+
+        bin_counts = []
+        for i in range(len(self.classes)):
+            if self.classes[i] in self.ignore_when_weighting:  continue
+            bin_counts.append(self.distributions[i])
+        bin_min = numpy.array(numpy.minimum.reduce(bin_counts))
         
         for i in range(len(self.classes)):
             #print(self.classes[i])
             tmphist=self.distributions[i]
             #print(tmphist)
             #print(refhist)
-            if numpy.amax(tmphist):
-                tmphist=tmphist/numpy.amax(tmphist)
+            if referenceclass in ['lowest']:
+                ratio = divideHistos(bin_min,tmphist)
             else:
-                print('Warning: class '+self.classes[i]+' empty.')
+                if numpy.amax(tmphist):
+                    tmphist=tmphist/numpy.amax(tmphist)
+                else:
+                    print('Warning: class '+self.classes[i]+' empty.')
             ratio=divideHistos(refhist,tmphist)
             ratio=ratio/numpy.amax(ratio)#norm to 1
             #print(ratio)
@@ -179,8 +192,8 @@ class Weighter(object):
         self.binweights=weighthists
         
         #make it an average 1
-        for i in range(len(self.binweights)):
-            self.binweights[i]=self.binweights[i]/numpy.average(self.binweights[i])
+        #for i in range(len(self.binweights)):
+        #    self.binweights[i]=self.binweights[i]/numpy.average(self.binweights[i])
     
     
         
