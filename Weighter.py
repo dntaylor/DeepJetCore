@@ -20,7 +20,7 @@ class Weighter(object):
         self.axisX=[]
         self.axisY=[]
         self.hists =[]
-        self.removeProbabilties=[]
+        self.removeProbabilities=[]
         self.binweights=[]
         self.distributions=[]
         self.totalcounts=[]
@@ -40,7 +40,7 @@ class Weighter(object):
            all(self.axisX == other.axisX) and \
            all(self.axisY == other.axisY) and \
            comparator(self.hists, other.hists) and \
-           comparator(self.removeProbabilties, other.removeProbabilties) and \
+           comparator(self.removeProbabilities, other.removeProbabilities) and \
            self.classes == other.classes and \
            self.refclassidx == other.refclassidx and \
            self.undefTruth == other.undefTruth and \
@@ -113,7 +113,7 @@ class Weighter(object):
         for i in range(len(self.classes)):
             if len(self.distributions):
                 plotHist(self.distributions[i],outdir+"/dist_"+self.classes[i]+".pdf")
-                plotHist(self.removeProbabilties[i] ,outdir+"/remprob_"+self.classes[i]+".pdf")
+                plotHist(self.removeProbabilities[i] ,outdir+"/remprob_"+self.classes[i]+".pdf")
                 plotHist(self.binweights[i],outdir+"/weights_"+self.classes[i]+".pdf")
                 reshaped=self.distributions[i]*self.binweights[i]
                 plotHist(reshaped,outdir+"/reshaped_"+self.classes[i]+".pdf")
@@ -175,7 +175,7 @@ class Weighter(object):
             ratio=1-ratio#make it a remove probability
             probhists.append(ratio)
         
-        self.removeProbabilties=probhists
+        self.removeProbabilities=probhists
         self.binweights=weighthists
         
         #make it an average 1
@@ -187,9 +187,9 @@ class Weighter(object):
         
     def createNotRemoveIndices(self,Tuple):
         import numpy
-        if len(self.removeProbabilties) <1:
-            print('removeProbabilties bins not initialised. Cannot create indices per jet')
-            raise Exception('removeProbabilties bins not initialised. Cannot create indices per jet')
+        if len(self.removeProbabilities) <1:
+            print('removeProbabilities bins not initialised. Cannot create indices per jet')
+            raise Exception('removeProbabilities bins not initialised. Cannot create indices per jet')
         
         tuplelength=len(Tuple)
 
@@ -217,7 +217,7 @@ class Weighter(object):
                 if  useonlyoneclass or 1 == jet[classs]:
                     found = True
                     rand=numpy.random.ranf()
-                    prob = self.removeProbabilties[index][binX][binY]
+                    prob = self.removeProbabilities[index][binX][binY]
                     
                     if rand < prob and index != self.refclassidx:
                         #print('rm  ',index,self.refclassidx,jet[classs],classs)
