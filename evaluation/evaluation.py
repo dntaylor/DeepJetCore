@@ -46,6 +46,12 @@ from DeepJetCore.compiled import c_storeTensor
 
 import json
 
+import numpy as np
+import matplotlib.pyplot as plt
+
+from sklearn.metrics import confusion_matrix
+
+
 class testDescriptor(object):
     
     def __init__(self, addnumpyoutput=False):
@@ -76,6 +82,8 @@ class testDescriptor(object):
         self.metrics=[]
         
         fullnumpyarray=np.array([])
+        fulltest = np.array([])
+        fullpred = np.array([])
         
         for i in range(len(testdatacollection.samples)):
             sample=testdatacollection.samples[i]
@@ -109,8 +117,6 @@ class testDescriptor(object):
             labels=td.y
             weights=td.w[0]
             
-            
-            
             prediction = model.predict(features)
             if self.use_only:
                 prediction = [prediction[i] for i in self.use_only]
@@ -118,6 +124,7 @@ class testDescriptor(object):
                 all_write = np.concatenate(prediction, axis=1)
             else:
                 all_write = prediction
+
 
             #if a prediction functor was set and the corresponding predictionFunctorClasses
             #its output is also added to the final predictions
@@ -166,6 +173,7 @@ class testDescriptor(object):
         if self.addnumpyoutput:    
             np.save(outputDir+'/'+'allprediction.npy', fullnumpyarray)
                 
+        #make_confusion(td.getUsedTruth(),fulltest,fullpred,outputDir+'/confusion.png')
             
     def writeToTextFile(self, outfile):
         '''
@@ -520,3 +528,45 @@ def plotLoss(infilename,outfilename,range):
 #                                            #can probably go formats = 'float32,float32,float32,float32,float32,float32,[npt * float32]')
 #
 #
+
+
+def plot_confusion_matrix(cm, classes,
+                          normalize=False,
+                          title='Confusion matrix',
+                          cmap=plt.cm.Blues):
+    """
+    This function prints and plots the confusion matrix.
+    Normalization can be applied by setting `normalize=True`.
+    """
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45)
+    plt.yticks(tick_marks, classes)
+
+    fmt = '.2f' if normalize else 'd'
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, format(cm[i, j], fmt),
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    plt.tight_layout()
+
+
+def make_confusion(names,test,pred,outfilename):
+    # Compute confusion matrix
+    cnf_matrix = confusion_matrix(test, pred)
+    np.set_printoptions(precision=2)
+    
+    # Plot normalized confusion matrix
+    f = plt.figure()
+    plot_confusion_matrix(cnf_matrix, classes=names, normalize=True,
+                          title='Normalized confusion matrix')
+    f.savefig(outfilename)
