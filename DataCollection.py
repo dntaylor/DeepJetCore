@@ -13,6 +13,7 @@ from TrainData import TrainData, fileTimeOut
 import logging
 from pdb import set_trace
 import copy
+import numpy as np
 
 usenewformat=True
 
@@ -25,7 +26,6 @@ class BatchRandomInputGenerator(object):
         self.batchsize=batchsize
         
     def generateBatch(self):
-        import numpy as np
         randoms=[]
         for i in range(len(self.ranges)):
             randoms.append(np.full((1,self.batchsize),np.random.uniform(self.ranges[i][0], self.ranges[i][1], size=1)[0]))
@@ -720,7 +720,6 @@ class DataCollection(object):
         return self.dataDir+'/'+samplefile
     
     def __stackData(self, dataclass, selector):
-        import numpy
         td=dataclass
         out=[]
         firstcall=True
@@ -741,9 +740,9 @@ class DataCollection(object):
             else:
                 for i in range(0,len(thislist)):
                     if selector == 'w':
-                        out[i] = numpy.append(out[i],thislist[i])
+                        out[i] = np.append(out[i],thislist[i])
                     else:
-                        out[i] = numpy.vstack((out[i],thislist[i]))
+                        out[i] = np.vstack((out[i],thislist[i]))
                 
         return out
     
@@ -751,7 +750,6 @@ class DataCollection(object):
     
         
     def generator(self):
-        import numpy
         import copy
         from sklearn.utils import shuffle
         import shutil
@@ -876,7 +874,7 @@ class DataCollection(object):
             ranges=td.generatePerBatch
             batchgen=BatchRandomInputGenerator(ranges, self.__batchsize)
         
-        xstored=[numpy.array([])]
+        xstored=[np.array([])]
         dimx=0
         ystored=[]
         dimy=0
@@ -918,7 +916,7 @@ class DataCollection(object):
             lastbatchrest=0
             if processedbatches == 0: #reset buffer and start new
                 #print('DataCollection: new turnaround')
-                xstored=[numpy.array([])]
+                xstored=[np.array([])]
                 dimx=0
                 ystored=[]
                 dimy=0
@@ -985,21 +983,21 @@ class DataCollection(object):
                     
                     for i in range(0,dimx):
                         if(xstored[i].ndim==1):
-                            xstored[i] = numpy.append(xstored[i],td.x[i])
+                            xstored[i] = np.append(xstored[i],td.x[i])
                         else:
-                            xstored[i] = numpy.vstack((xstored[i],td.x[i]))
+                            xstored[i] = np.vstack((xstored[i],td.x[i]))
                     
                     for i in range(0,dimy):
                         if(ystored[i].ndim==1):
-                            ystored[i] = numpy.append(ystored[i],td.y[i])
+                            ystored[i] = np.append(ystored[i],td.y[i])
                         else:
-                            ystored[i] = numpy.vstack((ystored[i],td.y[i]))
+                            ystored[i] = np.vstack((ystored[i],td.y[i]))
                     
                     for i in range(0,dimw):
                         if(wstored[i].ndim==1):
-                            wstored[i] = numpy.append(wstored[i],td.w[i])
+                            wstored[i] = np.append(wstored[i],td.w[i])
                         else:
-                            wstored[i] = numpy.vstack((wstored[i],td.w[i]))
+                            wstored[i] = np.vstack((wstored[i],td.w[i]))
                     
                 if xstored[0].shape[0] >= self.__batchsize:
                     batchcomplete = True
@@ -1019,15 +1017,15 @@ class DataCollection(object):
                 #print('batch complete, split')#DEBUG
                 
                 for i in range(0,dimx):
-                    splitted=numpy.split(xstored[i],[self.__batchsize])
+                    splitted=np.split(xstored[i],[self.__batchsize])
                     xstored[i] = splitted[1]
                     xout[i] = splitted[0]
                 for i in range(0,dimy):
-                    splitted=numpy.split(ystored[i],[self.__batchsize])
+                    splitted=np.split(ystored[i],[self.__batchsize])
                     ystored[i] = splitted[1]
                     yout[i] = splitted[0]
                 for i in range(0,dimw):
-                    splitted=numpy.split(wstored[i],[self.__batchsize])
+                    splitted=np.split(wstored[i],[self.__batchsize])
                     wstored[i] = splitted[1]
                     wout[i] = splitted[0]
             
@@ -1044,10 +1042,8 @@ class DataCollection(object):
                     raise Exception('serious problem with the output shapes!!')
                     
             for i in range(0,dimw):
-                if(wout[i].ndim==1):
-                    wout[i]=(wout[i].reshape(wout[i].shape[0],1))
-                if not xout[i].shape[1] >0:
-                    raise Exception('serious problem with the output shapes!!')
+                if(wout[i].ndim>1):
+                    wout[i] = np.squeeze(wout[i])
             
             processedbatches+=1
             
