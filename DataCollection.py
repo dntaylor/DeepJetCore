@@ -897,7 +897,7 @@ class DataCollection(object):
         TDReader=tdreader(filelist, self.maxFilesOpen, self.dataclass)
         
         #print('generator: total batches '+str(totalbatches))
-        print('start file buffering...')
+        #print('start file buffering...')
         TDReader.start()
         #### 
         #
