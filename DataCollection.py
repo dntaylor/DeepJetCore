@@ -758,7 +758,7 @@ class DataCollection(object):
         import copy
         import threading
         import time
-        print('start generator')
+        #print('start generator')
         #helper class
         class tdreader(object):
             def __init__(self,filelist,maxopen,tdclass):
@@ -1043,7 +1043,9 @@ class DataCollection(object):
                     
             for i in range(0,dimw):
                 if(wout[i].ndim>1):
-                    wout[i] = np.squeeze(wout[i])
+                    wout[i] = wout[i].reshape(wout[i].shape[0])
+                #if(wout[i].ndim>1):
+                #    wout[i] = np.squeeze(wout[i])
             
             processedbatches+=1
             
@@ -1054,7 +1056,6 @@ class DataCollection(object):
                 else:
                     xout[-1]=batchgen.generateBatch()
                     
-            
             if self.useweights:
                 yield (xout,yout,wout)
             else:
