@@ -293,6 +293,8 @@ class TrainData(object):
             self.ramdiskfile=None
                
     def readIn_async(self,fileprefix,read_async=True,shapesOnly=False,ramdiskpath='',randomseed=None):
+
+        #print('will read in ',fileprefix)
         
         if self.readthread and read_async:
             print('\nTrainData::readIn_async: started new read before old was finished. Intended? Waiting for first to finish...\n')

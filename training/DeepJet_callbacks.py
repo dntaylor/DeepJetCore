@@ -61,7 +61,7 @@ class newline_callbacks_begin(Callback):
     def on_epoch_end(self,epoch, epoch_logs={}):
         import os
         lossfile=os.path.join( self.outputDir, 'losses.log')
-        print('\n***callbacks***\nsaving losses to '+lossfile)
+        #print('\n***callbacks***\nsaving losses to '+lossfile)
         self.loss.append(epoch_logs.get('loss'))
         self.val_loss.append(epoch_logs.get('val_loss'))
         f = open(lossfile, 'a')
@@ -93,7 +93,8 @@ class newline_callbacks_begin(Callback):
         
 class newline_callbacks_end(Callback):
     def on_epoch_end(self,epoch, epoch_logs={}):
-        print('\n***callbacks end***\n')
+        pass
+        #print('\n***callbacks end***\n')
         
         
 class Losstimer(Callback):

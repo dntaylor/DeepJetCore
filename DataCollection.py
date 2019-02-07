@@ -1044,8 +1044,10 @@ class DataCollection(object):
             for i in range(0,dimw):
                 if(wout[i].ndim>1):
                     wout[i] = wout[i].reshape(wout[i].shape[0])
-                #if(wout[i].ndim>1):
-                #    wout[i] = np.squeeze(wout[i])
+                #if(wout[i].ndim==1):
+                #    wout[i]=(wout[i].reshape(wout[i].shape[0],1))
+                #if not wout[i].shape[1] >0:
+                #    raise Exception('serious problem with the output shapes!!')
             
             processedbatches+=1
             
@@ -1055,6 +1057,8 @@ class DataCollection(object):
                     xout.append(batchgen.generateBatch())
                 else:
                     xout[-1]=batchgen.generateBatch()
+
+            #print([x.shape for x in xout], [y.shape for y in yout], [w.shape for w in wout])
                     
             if self.useweights:
                 yield (xout,yout,wout)
