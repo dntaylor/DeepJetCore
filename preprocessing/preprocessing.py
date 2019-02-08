@@ -274,7 +274,8 @@ def MeanNormApply(Tuple,MeanNormTuple):
 def MeanNormZeroPadBinned(
         Filename_in, counter, nevents,
         dimension1, dimension2,
-        binned_info, summed_info
+        binned_info, summed_info,
+        dtype='float32'
         ):
     '''Takes too long to run the binning twice, run it only once and compute at the same time
     both the binned and the summed variables'''
@@ -303,11 +304,11 @@ def MeanNormZeroPadBinned(
     
     summed = numpy.zeros(
         (nevents,x_bins,y_bins, len(summed_branches)+1),
-        dtype='float32'
+        dtype=dtype
     )
     binned = numpy.zeros(
         (nevents,x_bins,y_bins,nMax,len(inbranches)) , 
-        dtype='float32'
+        dtype=dtype
     )
 
     c_meanNormZeroPad.particle_binner(
@@ -321,7 +322,7 @@ def MeanNormZeroPadBinned(
         
         
 def createDensityMap(Filename_in, MeanNormTuple, inbranch,nevents, dimension1, dimension2, 
-    counter, offset=0,weightbranch=""
+    counter, offset=0,weightbranch="",dtype='float32'
         ):
     
     from DeepJetCore.compiled import c_meanNormZeroPad
@@ -331,7 +332,7 @@ def createDensityMap(Filename_in, MeanNormTuple, inbranch,nevents, dimension1, d
     x_branch, x_center, x_bins, x_width = dimension1
     y_branch, y_center, y_bins, y_width = dimension2
     
-    array = numpy.zeros((nevents,x_bins,y_bins,1) , dtype='float32')
+    array = numpy.zeros((nevents,x_bins,y_bins,1) , dtype=dtype)
     
     c_meanNormZeroPad.fillDensityMap(
         array, norm, inbranch,weightbranch, Filename_in, counter,
@@ -343,7 +344,7 @@ def createDensityMap(Filename_in, MeanNormTuple, inbranch,nevents, dimension1, d
     return array
 
 def createCountMap(Filename_in, MeanNormTuple,nevents, dimension1, dimension2, 
-    counter, offset=0,weightbranch=""
+    counter, offset=0,weightbranch="",dtype='float32'
         ):
     
     from DeepJetCore.compiled import c_meanNormZeroPad
@@ -354,7 +355,7 @@ def createCountMap(Filename_in, MeanNormTuple,nevents, dimension1, dimension2,
     x_branch, x_center, x_bins, x_width = dimension1
     y_branch, y_center, y_bins, y_width = dimension2
     
-    array = numpy.zeros((nevents,x_bins,y_bins,1) , dtype='float32')
+    array = numpy.zeros((nevents,x_bins,y_bins,1) , dtype=dtype)
     
     c_meanNormZeroPad.fillCountMap(
         array, norm,weightbranch, Filename_in, counter,
@@ -373,7 +374,9 @@ def createDensity(Filename_in,
                         dimension1, 
                         dimension2, 
                         counterbranch,
-                        offsets=None):
+                        offsets=None,
+                        dtype='float32',
+                        ):
     
     from DeepJetCore.compiled import c_meanNormZeroPad
     
@@ -392,7 +395,7 @@ def createDensity(Filename_in,
     x_branch, x_center, x_bins, x_width = dimension1
     y_branch, y_center, y_bins, y_width = dimension2
     
-    array = numpy.zeros((nevents,x_bins,y_bins,maxlayers,len(inbranches)) , dtype='float32')
+    array = numpy.zeros((nevents,x_bins,y_bins,maxlayers,len(inbranches)) , dtype=dtype)
     
     
     c_meanNormZeroPad.fillDensityLayers(
@@ -425,7 +428,9 @@ def createDensityLayers(Filename_in,
                         dimension1, 
                         dimension2, 
                         counterbranch,
-                        scales=None):
+                        scales=None,
+                        dtype='float32',
+                        ):
     
     from DeepJetCore.compiled import c_meanNormZeroPad
     
@@ -442,7 +447,7 @@ def createDensityLayers(Filename_in,
     x_branch, x_center, x_bins, x_width = dimension1
     y_branch, y_center, y_bins, y_width = dimension2
     
-    array = numpy.zeros((nevents,x_bins,y_bins,maxlayers,len(inbranches)) , dtype='float32')
+    array = numpy.zeros((nevents,x_bins,y_bins,maxlayers,len(inbranches)) , dtype=dtype)
     
     
     c_meanNormZeroPad.fillDensityLayers(
@@ -462,11 +467,11 @@ def createDensityLayers(Filename_in,
     
     return array
  
-def MeanNormZeroPadParticles(Filename_in,MeanNormTuple,inbranches,nMax,nevents):
+def MeanNormZeroPadParticles(Filename_in,MeanNormTuple,inbranches,nMax,nevents,dtype='float32'):
   
     from DeepJetCore.compiled import c_meanNormZeroPad
     
-    array = numpy.zeros((nevents,nMax,len(inbranches)) , dtype='float32')
+    array = numpy.zeros((nevents,nMax,len(inbranches)) , dtype=dtype)
     
     
     means=[]
@@ -486,7 +491,7 @@ def MeanNormZeroPadParticles(Filename_in,MeanNormTuple,inbranches,nMax,nevents):
    
     return array
 
-def MeanNormZeroPad(Filename_in,MeanNormTuple,inbranches_listlist,nMaxslist,nevents):
+def MeanNormZeroPad(Filename_in,MeanNormTuple,inbranches_listlist,nMaxslist,nevents,dtype='float32'):
 
     """
     The function subtracts the mean and divides by the std. deviation.
@@ -512,7 +517,7 @@ def MeanNormZeroPad(Filename_in,MeanNormTuple,inbranches_listlist,nMaxslist,neve
     #numpy.set_printoptions(threshold=10000)
     
     #shape could be more generic here... but must be passed to c module then
-    array = numpy.zeros((nevents,totallengthperjet) , dtype='float32')
+    array = numpy.zeros((nevents,totallengthperjet) , dtype=dtype)
     
     #print('created array with shape ',array.shape)
     
@@ -533,7 +538,10 @@ def MeanNormZeroPad(Filename_in,MeanNormTuple,inbranches_listlist,nMaxslist,neve
     
     
     
-    c_meanNormZeroPad.process(array,normslist,meanslist,inbranches_listlist,nMaxslist,Filename_in)
+    if dtype=='uint32':
+        c_meanNormZeroPad_int.process(array,normslist,meanslist,inbranches_listlist,nMaxslist,Filename_in)
+    else:
+        c_meanNormZeroPad.process(array,normslist,meanslist,inbranches_listlist,nMaxslist,Filename_in)
     #import numpy as np
     
     

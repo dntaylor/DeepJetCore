@@ -410,7 +410,7 @@ class DataCollection(object):
         import copy
         self.readFromFile(collectionfile)
         self.dataclass.remove=False
-        self.dataclass.weight=True #False
+        self.dataclass.weight=False
         if traind: 
             print('[createTestDataForDataCollection] dataclass is overriden by user request')
             self.dataclass=traind

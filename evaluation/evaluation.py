@@ -45,10 +45,9 @@ from pdb import set_trace
 from DeepJetCore.compiled import c_storeTensor
 
 import json
-
+import itertools
 import numpy as np
 import matplotlib.pyplot as plt
-
 from sklearn.metrics import confusion_matrix
 
 
@@ -82,8 +81,9 @@ class testDescriptor(object):
         self.metrics=[]
         
         fullnumpyarray=np.array([])
-        fulltest = np.array([])
-        fullpred = np.array([])
+        fullx = None
+        fulltest = None
+        fullpred = None
         
         for i in range(len(testdatacollection.samples)):
             sample=testdatacollection.samples[i]
@@ -118,6 +118,16 @@ class testDescriptor(object):
             weights=td.w[0]
             
             prediction = model.predict(features)
+
+            if fulltest is not None:
+                fullx    = np.concatenate([fullx, features[0]], axis=0)
+                fulltest = np.concatenate([fulltest, labels[0]], axis=0)
+                fullpred = np.concatenate([fullpred, prediction], axis=0)
+            else:
+                fullx    = features[0]
+                fulltest = labels[0]
+                fullpred = prediction
+
             if self.use_only:
                 prediction = [prediction[i] for i in self.use_only]
             if isinstance(prediction, list):
@@ -173,7 +183,14 @@ class testDescriptor(object):
         if self.addnumpyoutput:    
             np.save(outputDir+'/'+'allprediction.npy', fullnumpyarray)
                 
-        #make_confusion(td.getUsedTruth(),fulltest,fullpred,outputDir+'/confusion.png')
+        skip = np.all(fulltest==0, axis=1)
+        fullx = fullx[~skip]
+        fullpred = fullpred[~skip]
+        fulltest = fulltest[~skip]
+        #print(fullx)
+        #print(fulltest)
+        #print(fullpred)
+        make_confusion(td.getUsedTruth(),fulltest.argmax(axis=1),fullpred.argmax(axis=1),outputDir+'/confusion.png')
             
     def writeToTextFile(self, outfile):
         '''
@@ -530,14 +547,12 @@ def plotLoss(infilename,outfilename,range):
 #
 
 
-def plot_confusion_matrix(cm, classes,
+def plot_confusion_matrix(y_test, y_pred, classes,
                           normalize=False,
                           title='Confusion matrix',
                           cmap=plt.cm.Blues):
-    """
-    This function prints and plots the confusion matrix.
-    Normalization can be applied by setting `normalize=True`.
-    """
+    cm = confusion_matrix(y_test, y_pred)
+    np.set_printoptions(precision=2)
     if normalize:
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
 
@@ -561,12 +576,7 @@ def plot_confusion_matrix(cm, classes,
 
 
 def make_confusion(names,test,pred,outfilename):
-    # Compute confusion matrix
-    cnf_matrix = confusion_matrix(test, pred)
-    np.set_printoptions(precision=2)
-    
-    # Plot normalized confusion matrix
     f = plt.figure()
-    plot_confusion_matrix(cnf_matrix, classes=names, normalize=True,
+    plot_confusion_matrix(test, pred, classes=names, normalize=True,
                           title='Normalized confusion matrix')
     f.savefig(outfilename)
