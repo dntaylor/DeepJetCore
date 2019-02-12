@@ -1,5 +1,6 @@
 
 renewtokens=True
+useAFS=False
 
 def renew_token_process():
     
@@ -12,7 +13,7 @@ def renew_token_process():
         logstr=""
         try:
             logstr=subprocess.check_call(['kinit', '-R'])
-            logstr+=subprocess.check_call(['aklog'])
+            if useAFS: logstr+=subprocess.check_call(['aklog'])
         except:
             print(logstr)
         time.sleep(3600)
@@ -34,7 +35,7 @@ def checkTokens(cutofftime_hours=48):
     if not 'renew' in klist:
         print('did not find renew option in kerberos token. Starting kinit')
         subprocess.check_call(['kinit','-l 96h'])
-        subprocess.check_call(['aklog'])
+        if useAFS: subprocess.check_call(['aklog'])
         return True
         
     klist=str(klist).split()
@@ -62,6 +63,6 @@ def checkTokens(cutofftime_hours=48):
     if diff < cutofftime_hours*3600:
         print('token will expire soon. Starting kinit')
         subprocess.check_call(['kinit','-l 96h'])
-        subprocess.check_call(['aklog'])
+        if useAFS: subprocess.check_call(['aklog'])
     return True
     

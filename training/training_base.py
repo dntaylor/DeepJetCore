@@ -48,6 +48,7 @@ class training_base(object):
 				useweights=False, testrun=False,
 				resumeSilently=False, 
 				renewtokens=True,
+                useAFS=False,
 				collection_class=DataCollection,
 				parser=None
 				):
@@ -109,6 +110,7 @@ class training_base(object):
         self.compiled=False
         self.checkpointcounter=0
         self.renewtokens=renewtokens
+        self.useAFS=useAFS
         self.callbacks=None
         
         

@@ -40,6 +40,10 @@ dashedcolormap=['red','red,dashed'
  , 'green','green,dashed'
  , 'darkpurple','darkpurple,dashed'
  , 'gray','gray,dashed']
+
+# batch mode
+import matplotlib as mpl
+mpl.use('Agg')
     
 from pdb import set_trace
 from DeepJetCore.compiled import c_storeTensor
