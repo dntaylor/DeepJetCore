@@ -229,21 +229,29 @@ class TrainData(object):
         # try "lzf", too, faster, but less compression
         def _writeoutListinfo(arrlist,fidstr,h5F):
             arr=numpy.array([len(arrlist)])
+            #print('writing {} info'.format(fidstr))
+            #print(arr)
             h5F.create_dataset(fidstr+'_listlength',data=arr)
             for i in range(len(arrlist)):
                 idstr=fidstr+str(i)
+                #print('writing {}'.format(idstr))
+                #print(arrlist[i].shape)
                 h5F.create_dataset(idstr+'_shape',data=arrlist[i].shape)
             
         def _writeoutArrays(arrlist,fidstr,h5F):    
+            #print('writing {}'.format(fidstr))
             for i in range(len(arrlist)):
                 idstr=fidstr+str(i)
                 arr=arrlist[i]
+                #print('writing {}'.format(idstr))
                 if "meta" in fileprefix[-4:]:
                     from DeepJetCore.compiled.c_readArrThreaded import writeArray
                     if arr.dtype!='float32':
                         arr=arr.astype('float32')
+                    #print(arr)
                     writeArray(arr.ctypes.data,fileprefix[:-4]+fidstr+'.'+str(i),list(arr.shape))
                 else:
+                    #print(arr)
                     h5F.create_dataset(idstr, data=arr, compression="lzf")
         
         
@@ -325,6 +333,7 @@ class TrainData(object):
                 shapeinfos.append(shapeinfo)
             return sharedlist, shapeinfos
         
+        #print('reading {}'.format(fileprefix))
         
         with threadingfileandmem_lock:
             try:
@@ -432,18 +441,24 @@ class TrainData(object):
                 filebase=readfile[:-4]
                 self.readthreadids=[]
                 for i in range(len(self.w_list)):
+                    #print(self.w_list[i])
+                    #print(self.w_list[i].ctypes)
                     (readBlocking(self.w_list[i].ctypes.data,
                                                            filebase+'w.'+str(i),
                                                            fileprefix,
                                                            list(self.w_list[i].shape),
                                                            isRamDisk))
                 for i in range(len(self.x_list)):
+                    #print(self.x_list[i])
+                    #print(self.x_list[i].ctypes)
                     (readBlocking(self.x_list[i].ctypes.data,
                                                            filebase+'x.'+str(i),
                                                            fileprefix,
                                                            list(self.x_list[i].shape),
                                                            isRamDisk))
                 for i in range(len(self.y_list)):
+                    #print(self.y_list[i])
+                    #print(self.y_list[i].ctypes)
                     (readBlocking(self.y_list[i].ctypes.data,
                                                            filebase+'y.'+str(i),
                                                            fileprefix,
@@ -454,6 +469,9 @@ class TrainData(object):
                 self.readdone=multiprocessing.Value('b',False)
                 _read_arrs_(self.w_list,self.x_list,self.y_list,self.readdone,readfile,self,randomseed)
             
+        #print(self.x_list)
+        #print(self.y_list)
+        #print(self.w_list)
             
         
     def readIn_abort(self):

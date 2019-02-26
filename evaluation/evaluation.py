@@ -52,8 +52,7 @@ import json
 import itertools
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix
-
+from sklearn.metrics import confusion_matrix, roc_curve, auc
 
 class testDescriptor(object):
     
@@ -116,10 +115,18 @@ class testDescriptor(object):
                 #new implementation. Please check with the store_labels option, Mauro
                 formatstring.extend(['reg_%s%s' % (i, ident) for i in regressionclasses])
 
+                # add the truth to the friend tree
+                formatstring.extend(truthclasses)
+
 
             features=td.x
             labels=td.y
             weights=td.w[0]
+
+            #print('x,y,w:')
+            #print(features)
+            #print(labels)
+            #print(weights)
             
             prediction = model.predict(features)
 
@@ -138,6 +145,13 @@ class testDescriptor(object):
                 all_write = np.concatenate(prediction, axis=1)
             else:
                 all_write = prediction
+
+            if isinstance(labels,list):
+                all_labels = np.concatenate(labels, axis=1)
+            else:
+                all_labels = labels
+
+            all_write = np.concatenate([all_write, all_labels], axis=1)
 
 
             #if a prediction functor was set and the corresponding predictionFunctorClasses
@@ -187,14 +201,21 @@ class testDescriptor(object):
         if self.addnumpyoutput:    
             np.save(outputDir+'/'+'allprediction.npy', fullnumpyarray)
                 
+        # WARNING
+        # if you have to do this, you probably ahve aproblem before, need to debug
+        # but when you write a row with all 0s, things dont work correctly in the output files
+        # skip no truth
         skip = np.all(fulltest==0, axis=1)
         fullx = fullx[~skip]
         fullpred = fullpred[~skip]
         fulltest = fulltest[~skip]
-        #print(fullx)
-        #print(fulltest)
-        #print(fullpred)
+        # skip multi truth
+        skip = np.sum(fulltest, axis=1)>1
+        fullx = fullx[~skip]
+        fullpred = fullpred[~skip]
+        fulltest = fulltest[~skip]
         make_confusion(td.getUsedTruth(),fulltest.argmax(axis=1),fullpred.argmax(axis=1),outputDir+'/confusion.png')
+        make_rocs(td.getUsedTruth(),fulltest,fullpred,outputDir+'/roc.png')
             
     def writeToTextFile(self, outfile):
         '''
@@ -584,3 +605,26 @@ def make_confusion(names,test,pred,outfilename):
     plot_confusion_matrix(test, pred, classes=names, normalize=True,
                           title='Normalized confusion matrix')
     f.savefig(outfilename)
+
+def make_rocs(names,test,pred,outfilename):
+    for i,name in enumerate(names):
+        f = plt.figure()
+
+        fpr, tpr, _ = roc_curve(test[:,i], pred[:,i])
+        roc_auc = auc(fpr,tpr)
+
+        lw = 2
+        plt.plot(fpr,tpr, lw=lw, color='darkorange',  label='{} ROC (area = {:.2f})'.format(name,roc_auc))
+        plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+        plt.xlim([0.0, 1.0])
+        plt.ylim([0.0, 1.05])
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.legend(loc="lower right")
+    
+        fsplit = outfilename.split('.')
+        fsplit[-2] += '_{}'.format(name)
+        fname = '.'.join(fsplit)
+        f.savefig(fname)
+
+
