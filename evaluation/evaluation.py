@@ -615,16 +615,44 @@ def make_rocs(names,test,pred,outfilename):
 
         lw = 2
         plt.plot(fpr,tpr, lw=lw, color='darkorange',  label='{} ROC (area = {:.2f})'.format(name,roc_auc))
-        plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
-        plt.xlim([0.0, 1.0])
+        #plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+        plt.xlim([1e-4, 1.0])
         plt.ylim([0.0, 1.05])
+        plt.xscale('log')
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
-        plt.legend(loc="lower right")
+        plt.legend(loc="upper left")
     
         fsplit = outfilename.split('.')
         fsplit[-2] += '_{}'.format(name)
         fname = '.'.join(fsplit)
         f.savefig(fname)
+
+        for j,fake in enumerate(names):
+            if name==fake: continue
+
+            f = plt.figure()
+
+            keep = np.logical_or(test[:,i]==1, test[:,j]==1)
+            thistest = test[keep]
+            thispred = pred[keep]
+
+            fpr, tpr, _ = roc_curve(thistest[:,i], thispred[:,i])
+            roc_auc = auc(fpr,tpr)
+
+            lw = 2
+            plt.plot(fpr,tpr, lw=lw, color='darkorange',  label='{} ROC (area = {:.2f})'.format(name,roc_auc))
+            #plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+            plt.xlim([1e-5, 1.0])
+            plt.ylim([0.0, 1.05])
+            plt.xscale('log')
+            plt.xlabel('False positive: {}'.format(fake))
+            plt.ylabel('True positive: {}'.format(name))
+            plt.legend(loc="upper left")
+    
+            fsplit = outfilename.split('.')
+            fsplit[-2] += '_{}_{}'.format(name,fake)
+            fname = '.'.join(fsplit)
+            f.savefig(fname)
 
 
