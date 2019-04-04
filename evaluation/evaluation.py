@@ -498,7 +498,8 @@ def plotAccuracy(infilename,outfilename,range):
         plt.ylim(range)
     elif automax>0:
         plt.ylim([automin*0.98,automax*1.02])
-    f.savefig(outfilename)
+    f.savefig(outfilename.replace('.png','.pdf'))
+    f.savefig(outfilename.replace('.pdf','.png'))
 
 def plotLoss(infilename,outfilename,range):
 
@@ -536,7 +537,8 @@ def plotLoss(infilename,outfilename,range):
         plt.ylim(range)
     elif automax>0:
         plt.ylim([automin*0.98,automax*1.02])
-    f.savefig(outfilename)
+    f.savefig(outfilename.replace('.png','.pdf'))
+    f.savefig(outfilename.replace('.pdf','.png'))
     
 ######### old part - keep for reference, might be useful some day 
 
@@ -604,7 +606,20 @@ def make_confusion(names,test,pred,outfilename):
     f = plt.figure()
     plot_confusion_matrix(test, pred, classes=names, normalize=True,
                           title='Normalized confusion matrix')
-    f.savefig(outfilename)
+    f.savefig(outfilename.replace('.pdf','.png'))
+    f.savefig(outfilename.replace('.png','.pdf'))
+
+
+def plot_roc(name,tpr,fpr,roc_auc,xlabel='True Positive Rate',ylabel='False Positive Rate'):
+    lw = 2
+    plt.plot(tpr,fpr, lw=lw, color='darkorange',  label='{} ROC (area = {:.2f})'.format(name,roc_auc))
+    #plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+    plt.xlim([0.0, 1.05])
+    plt.ylim([1e-5, 1.0])
+    plt.yscale('log')
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.legend(loc="upper left")
 
 def make_rocs(names,test,pred,outfilename):
     for i,name in enumerate(names):
@@ -613,20 +628,13 @@ def make_rocs(names,test,pred,outfilename):
         fpr, tpr, _ = roc_curve(test[:,i], pred[:,i])
         roc_auc = auc(fpr,tpr)
 
-        lw = 2
-        plt.plot(fpr,tpr, lw=lw, color='darkorange',  label='{} ROC (area = {:.2f})'.format(name,roc_auc))
-        #plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
-        plt.xlim([1e-4, 1.0])
-        plt.ylim([0.0, 1.05])
-        plt.xscale('log')
-        plt.xlabel('False Positive Rate')
-        plt.ylabel('True Positive Rate')
-        plt.legend(loc="upper left")
-    
+        plot_roc(name,tpr,fpr,roc_auc)
+
         fsplit = outfilename.split('.')
         fsplit[-2] += '_{}'.format(name)
         fname = '.'.join(fsplit)
-        f.savefig(fname)
+        f.savefig(fname.replace('.pdf','.png'))
+        f.savefig(fname.replace('.png','.pdf'))
 
         for j,fake in enumerate(names):
             if name==fake: continue
@@ -640,19 +648,12 @@ def make_rocs(names,test,pred,outfilename):
             fpr, tpr, _ = roc_curve(thistest[:,i], thispred[:,i])
             roc_auc = auc(fpr,tpr)
 
-            lw = 2
-            plt.plot(fpr,tpr, lw=lw, color='darkorange',  label='{} ROC (area = {:.2f})'.format(name,roc_auc))
-            #plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
-            plt.xlim([1e-5, 1.0])
-            plt.ylim([0.0, 1.05])
-            plt.xscale('log')
-            plt.xlabel('False positive: {}'.format(fake))
-            plt.ylabel('True positive: {}'.format(name))
-            plt.legend(loc="upper left")
+            plot_roc(name,tpr,fpr,roc_auc,'True positive: {}'.format(name),'False positive: {}'.format(fake))
     
             fsplit = outfilename.split('.')
             fsplit[-2] += '_{}_{}'.format(name,fake)
             fname = '.'.join(fsplit)
-            f.savefig(fname)
+            f.savefig(fname.replace('.pdf','.png'))
+            f.savefig(fname.replace('.png','.pdf'))
 
 
