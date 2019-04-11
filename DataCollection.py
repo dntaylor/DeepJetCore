@@ -768,6 +768,7 @@ class DataCollection(object):
                 self.max=min(maxopen,len(filelist))
                 self.tdlist=[]
                 self.tdopen=[]
+                self.toskip=[]
                 self.tdclass=copy.deepcopy(tdclass)
                 self.tdclass.clear()#only use the format, no data
                 #self.copylock=thread.allocate_lock()
@@ -795,6 +796,10 @@ class DataCollection(object):
                     self.tdlist[self.nextcounter].clear()
                 self.tdlist[self.nextcounter]=copy.deepcopy(self.tdclass)
                 self.tdlist[self.nextcounter].readthread=None
+
+                if readfilename in self.toskip: 
+                    self.__readNext()
+                    return
                 
                 def startRead(counter,filename,shuffleseed):   
                     excounter=0
@@ -810,6 +815,12 @@ class DataCollection(object):
                             if excounter<10:
                                 time.sleep(5)
                                 continue
+
+                            # just skip it instead of raising error
+                            self.toskip += [filename]
+                            return
+
+                            # previously raised error
                             traceback.print_exc(file=sys.stdout)
                             raise d
                     
@@ -826,6 +837,15 @@ class DataCollection(object):
                 
                 
             def __getLast(self):
+                # check if we skipped it
+                readfilename=self.filelist[self.lastcounter]
+                if readfilename in self.toskip:
+                    self.tdopen[self.lastcounter] = False
+                    self.lastcounter = self.__increment(self.lastcounter,self.nfiles)
+                    self.__readNext()
+                    return self.__getLast()
+
+                # wait for the async read
                 self.tdlist[self.lastcounter].readIn_join(wasasync=True,waitforStart=True)
                 td=self.tdlist[self.lastcounter]
                 #print('got ',self.lastcounter)
